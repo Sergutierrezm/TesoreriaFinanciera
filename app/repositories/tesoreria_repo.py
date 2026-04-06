@@ -42,9 +42,53 @@ class TesoreriaRepository:
                  conn.close()
 
                  return registros        
+    def actualizar(self, id_registro, nuevo_liquido, nueva_inversion, nuevo_total):
+        sql = """
+            UPDATE tesoreria 
+            SET capital_liquido = %s, inversion = %s, total = %s 
+            WHERE id = %s
+        """
+        conn = obtener_conexion()
+        if conn:
+            try:
+                with conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(sql, (nuevo_liquido, nueva_inversion, nuevo_total, id_registro))
+                print(f"✅ Registro ID {id_registro} actualizado correctamente.")
+            except Exception as e:
+                print(f"❌ Error al actualizar: {e}")
+            finally:
+                conn.close()
 
+    def eliminar(self, id_registro):
+        sql = "DELETE FROM tesoreria WHERE id = %s"
+        conn = obtener_conexion()
+        if conn:
+            try:
+                with conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(sql, (id_registro,))
+                print(f"🗑️ Registro ID {id_registro} eliminado de la base de datos.")
+            except Exception as e:
+                print(f"❌ Error al eliminar: {e}")
+            finally:
+                conn.close()
 
-
+    def obtener_ultimo_registro(self):
+        # Buscamos el registro con el ID más alto (el último insertado)
+        sql = "SELECT total FROM tesoreria ORDER BY id DESC LIMIT 1"
+        conn = obtener_conexion()
+        ultimo_total = 0
+        if conn:
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(sql)
+                    resultado = cursor.fetchone()
+                    if resultado:
+                        ultimo_total = float(resultado[0])
+            finally:
+                conn.close()
+        return ultimo_total
 
 
 
