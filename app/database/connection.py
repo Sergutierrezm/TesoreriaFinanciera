@@ -1,15 +1,24 @@
 import sqlite3
+import sys
+import os
 from pathlib import Path
 
-# Definimos la ruta donde se guardará la base de datos
-# Al usar Path(__file__), nos aseguramos de que se cree en la carpeta del proyecto
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# --- LÓGICA DE RUTA PARA EJECUTABLE ---
+# Si el programa está "congelado" (es un .exe o binario de Mac)
+if getattr(sys, 'frozen', False):
+    # Usamos la ruta donde reside el archivo ejecutable que el usuario abrió
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    # Si estamos ejecutando el script .py normal en desarrollo
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Definimos la ruta final de la base de datos
 DB_PATH = BASE_DIR / "tesoreria_datos.db"
 
 def obtener_conexion():
     """Establece conexión con la base de datos SQLite local."""
     try:
-        # SQLite crea el archivo automáticamente si no existe al intentar conectar
+        # SQLite crea el archivo automáticamente en DB_PATH si no existe
         conexion = sqlite3.connect(DB_PATH)
         return conexion
     except sqlite3.Error as e:
@@ -19,7 +28,7 @@ def obtener_conexion():
 def inicializar_base_de_datos():
     """
     Crea la tabla necesaria si el usuario abre el programa por primera vez.
-    Esto hace que el programa sea 'independiente'.
+    Esto asegura que el archivo .db sea funcional desde el segundo 1.
     """
     conn = obtener_conexion()
     if conn:
@@ -41,4 +50,3 @@ def inicializar_base_de_datos():
             print(f"❌ Error al inicializar la base de datos: {e}")
         finally:
             conn.close()
-
